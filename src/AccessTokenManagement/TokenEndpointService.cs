@@ -13,52 +13,74 @@ using System.Threading.Tasks;
 
 namespace IdentityModel.AspNetCore.AccessTokenManagement
 {
+  /// <summary>
+  /// Implements token endpoint operations using IdentityModel
+  /// </summary>
+  public class TokenEndpointService : ITokenEndpointService
+  {
+    private readonly ITokenClientConfigurationService _configService;
+    private readonly HttpClient _httpClient;
+
     /// <summary>
-    /// Implements token endpoint operations using IdentityModel
+    /// ctor
     /// </summary>
-    public class TokenEndpointService : ITokenEndpointService
+    /// <param name="configService"></param>
+    /// <param name="httpClientFactory"></param>
+    public TokenEndpointService(
+        ITokenClientConfigurationService configService,
+        IHttpClientFactory httpClientFactory)
     {
-        private readonly ITokenClientConfigurationService _configService;
-        private readonly HttpClient _httpClient;
-
-        /// <summary>
-        /// ctor
-        /// </summary>
-        /// <param name="configService"></param>
-        /// <param name="httpClientFactory"></param>
-        public TokenEndpointService(
-            ITokenClientConfigurationService configService,
-            IHttpClientFactory httpClientFactory)
-        {
-            _configService = configService;
-            _httpClient = httpClientFactory.CreateClient(AccessTokenManagementDefaults.BackChannelHttpClientName);
-        }
-
-        /// <inheritdoc/>
-        public async Task<TokenResponse> RequestClientAccessToken(string clientName = AccessTokenManagementDefaults.DefaultTokenClientName)
-        {
-            var requestDetails = await _configService.GetClientCredentialsRequestAsync(clientName);
-
-            return await _httpClient.RequestClientCredentialsTokenAsync(requestDetails);
-        }
-
-        /// <inheritdoc/>
-        public async Task<TokenResponse> RefreshUserAccessTokenAsync(string refreshToken)
-        {
-            var requestDetails = await _configService.GetRefreshTokenRequestAsync();
-            requestDetails.RefreshToken = refreshToken;
-
-            return await _httpClient.RequestRefreshTokenAsync(requestDetails);
-        }
-
-        /// <inheritdoc/>
-        public async Task<TokenRevocationResponse> RevokeRefreshTokenAsync(string refreshToken)
-        {
-            var requestDetails = await _configService.GetTokenRevocationRequestAsync();
-            requestDetails.Token = refreshToken;
-            requestDetails.TokenTypeHint = OidcConstants.TokenTypes.RefreshToken;
-
-            return await _httpClient.RevokeTokenAsync(requestDetails);
-        }
+      _configService = configService;
+      _httpClient = httpClientFactory.CreateClient(AccessTokenManagementDefaults.BackChannelHttpClientName);
     }
+
+    /// <inheritdoc/>
+    public async Task<TokenResponse> RequestClientAccessToken(string clientName = AccessTokenManagementDefaults.DefaultTokenClientName)
+    {
+      var requestDetails = await _configService.GetClientCredentialsRequestAsync(clientName);
+
+      return await _httpClient.RequestClientCredentialsTokenAsync(requestDetails);
+    }
+
+    /// <inheritdoc/>
+    public async Task<TokenResponse> RefreshUserAccessTokenAsync(string refreshToken)
+    {
+      var requestDetails = await _configService.GetRefreshTokenRequestAsync();
+      requestDetails.RefreshToken = refreshToken;
+
+      return await _httpClient.RequestRefreshTokenAsync(requestDetails);
+    }
+
+    /// <inheritdoc/>
+    public async Task<TokenRevocationResponse> RevokeRefreshTokenAsync(string refreshToken)
+    {
+      var requestDetails = await _configService.GetTokenRevocationRequestAsync();
+      requestDetails.Token = refreshToken;
+      requestDetails.TokenTypeHint = OidcConstants.TokenTypes.RefreshToken;
+
+      return await _httpClient.RevokeTokenAsync(requestDetails);
+    }
+
+    /// <inheritdoc/>
+    public async Task<TokenResponse> RequestPasswordTokenAsync(string login, string password, string clientName = null)
+    {
+      var requestDetails = await _configService.GetPasswordGrantRequestAsync(clientName);
+      if (!string.IsNullOrEmpty(login) && !string.IsNullOrEmpty(password))
+      {
+        requestDetails.UserName = login;
+        requestDetails.Password = password;
+      }
+
+      return await _httpClient.RequestPasswordTokenAsync(requestDetails);
+    }
+
+    /// <inheritdoc/>
+    public async Task<TokenResponse> RefreshPasswordTokenAsync(string refreshToken, string clientName = null)
+    {
+      var requestDetails = await _configService.GetRefreshPasswordTokenRequestAsync(clientName);
+      requestDetails.RefreshToken = refreshToken;
+
+      return await _httpClient.RequestRefreshTokenAsync(requestDetails);
+    }
+  }
 }

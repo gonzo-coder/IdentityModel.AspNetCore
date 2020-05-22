@@ -6,30 +6,47 @@ using IdentityModel.Client;
 
 namespace IdentityModel.AspNetCore.AccessTokenManagement
 {
+  /// <summary>
+  /// Abstraction for token endpoint operations
+  /// </summary>
+  public interface ITokenEndpointService
+  {
     /// <summary>
-    /// Abstraction for token endpoint operations
+    /// Refreshes a user access token.
     /// </summary>
-    public interface ITokenEndpointService
-    {
-        /// <summary>
-        /// Refreshes a user access token.
-        /// </summary>
-        /// <param name="refreshToken"></param>
-        /// <returns></returns>
-        Task<TokenResponse> RefreshUserAccessTokenAsync(string refreshToken);
-        
-        /// <summary>
-        /// Requests a client access token.
-        /// </summary>
-        /// <param name="clientName"></param>
-        /// <returns></returns>
-        Task<TokenResponse> RequestClientAccessToken(string clientName = null);
-        
-        /// <summary>
-        /// Revokes a refresh token.
-        /// </summary>
-        /// <param name="refreshToken"></param>
-        /// <returns></returns>
-        Task<TokenRevocationResponse> RevokeRefreshTokenAsync(string refreshToken);
-    }
+    /// <param name="refreshToken"></param>
+    /// <returns></returns>
+    Task<TokenResponse> RefreshUserAccessTokenAsync(string refreshToken);
+
+    /// <summary>
+    /// Requests a client access token.
+    /// </summary>
+    /// <param name="clientName"></param>
+    /// <returns></returns>
+    Task<TokenResponse> RequestClientAccessToken(string clientName = null);
+
+    /// <summary>
+    /// Revokes a refresh token.
+    /// </summary>
+    /// <param name="refreshToken"></param>
+    /// <returns></returns>
+    Task<TokenRevocationResponse> RevokeRefreshTokenAsync(string refreshToken);
+
+    /// <summary>
+    /// Refreshes a password access token.
+    /// </summary>
+    /// <param name="login"></param>
+    /// <param name="password"></param>
+    /// <param name="clientName"></param>
+    /// <returns></returns>
+    Task<TokenResponse> RequestPasswordTokenAsync(string login, string password, string clientName = null);
+
+    /// <summary>
+    /// Refreshes a password access token.
+    /// </summary>
+    /// <param name="refreshToken"></param>
+    /// <param name="clientName"></param>
+    /// <returns></returns>
+    Task<TokenResponse> RefreshPasswordTokenAsync(string refreshToken, string clientName = null);
+  }
 }
